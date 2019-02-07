@@ -1,6 +1,24 @@
 #!/bin/bash
 
-sdcard_image=$1
+usage_exit() {
+  echo -e "This script prepares an ARCH (aarch64) image for the raspi 3b+\n" \
+          "that can be directly dd copied to an sdcard." \
+  echo "Usage: $0 -i image_file" 1>&2
+  exit 1
+}
+
+while getopts i: option
+do
+case "${option}"
+in
+i) sdcard_image=${OPTARG};;
+esac
+done
+
+if [ -z $sdcard_image ]; then
+  echo "no image file specified! use -i somefile.img"
+  usage_exit
+fi
 
 arch_archive_url=http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-3-latest.tar.gz
 #arch_archive_url=http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz
@@ -12,9 +30,10 @@ sfdisk_config_file=raspi_sdcard.sfdisk
 
 arch_archive_file=$(basename -a $arch_archive_url)
 
-curl -L -o $arch_archive_file $arch_archive_url
+#download archive file if not already present
+[ -f $arch_archive_file ] || curl -L -o $arch_archive_file $arch_archive_url
 
-fallocate -l 8G $sdcard_image
+fallocate -l 4G $sdcard_image
 # maybe fall back to something like this if fallocate isn't working:
 #dd if=/dev/zero of=$sdcard_image bs=4k iflag=fullblock,count_bytes count=8G
 
@@ -46,5 +65,7 @@ sync
 mv $raspi_root_folder/boot/* $raspi_boot_folder
 
 umount $raspi_boot_folder $raspi_root_folder
+
+rmdir $raspi_boot_folder $raspi_root_folder
 
 losetup -d $loopback_dev
