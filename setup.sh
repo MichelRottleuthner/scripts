@@ -43,6 +43,7 @@ pacman -S sudo --noconfirm
 pacman -S git --noconfirm
 pacman -S base-devel --noconfirm
 pacman -S wireshark-cli --noconfirm
+pacman -S radvd --noconfirm
 
 #give all members of wheel sudo access
 sed --in-place -E "s/^#( %wheel ALL=\(ALL\) ALL)/\1/" /etc/sudoers
